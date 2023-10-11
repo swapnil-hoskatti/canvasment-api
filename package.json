@@ -1,0 +1,20 @@
+{
+  "name": "canvasment-api",
+  "version": "1.0.0",
+  "description": "CanvasmentAPI - An API for the canvas announcement demonstration project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "node",
+    "restful",
+    "api",
+    "canvas"
+  ],
+  "author": "Swapnil Hoskatti",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
