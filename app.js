@@ -2,9 +2,13 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+const mongoose  = require('mongoose');
 
 const userRoutes = require('./api/routes/users');
 const assignmentRoutes = require('./api/routes/assignments');
+
+// Connect to MongoDB
+mongoose.connect('mongodb://0.0.0.0:27017/');
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: false}));
