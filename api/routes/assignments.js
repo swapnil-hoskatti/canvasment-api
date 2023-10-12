@@ -8,8 +8,16 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
+    const assignment = {
+        name: req.body.name,
+        description: req.body.description,
+        dueDate: req.body.dueDate,
+        course: req.body.course,
+        points: req.body.points
+    };
     res.status(201).json({
-        message: 'Handling POST requests to /assignments'
+        message: 'Handling POST requests to /assignments',
+        createdAssignment: assignment
     });
 });
 

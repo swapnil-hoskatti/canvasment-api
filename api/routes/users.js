@@ -8,8 +8,16 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
+    const user = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: req.body.password,
+        role: req.body.role
+    };
     res.status(201).json({
-        message: 'Handling POST requests to /users'
+        message: 'Handling POST requests to /users',
+        createdUser: user
     });
 });
 
