@@ -6,11 +6,14 @@ const mongoose = require("mongoose");
 
 const userRoutes = require("./api/routes/users");
 const assignmentRoutes = require("./api/routes/assignments");
+const courseRoutes = require("./api/routes/courses");
+const notificationRoutes = require("./api/routes/notifications");
 
 // Connect to MongoDB
 mongoose.connect("mongodb://0.0.0.0:27017/");
 
 app.use(morgan("dev"));
+app.use("/uploads", express.static("uploads"));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -35,8 +38,10 @@ app.use((req, res, next) => {
 });
 
 // Routes handling requests
-app.use("/users", userRoutes);
-app.use("/assignments", assignmentRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/assignments", assignmentRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use((req, res, next) => {
   const error = new Error("Not found");

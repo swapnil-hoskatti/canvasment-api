@@ -21,7 +21,7 @@ router.get("/", (req, res, next) => {
             _id: doc._id,
             request: {
               type: "GET",
-              url: "http://localhost:3000/assignments/" + doc._id,
+              url: "http://localhost:3000/api/assignments/" + doc._id,
             },
           };
         }),
@@ -98,7 +98,7 @@ router.patch("/:assignId", (req, res, next) => {
         message: "Assignment updated",
         request: {
           type: "GET",
-          url: "http://localhost:3000/assignments/" + id,
+          url: "http://localhost:3000/api/assignments/" + id,
         },
       });
     })
