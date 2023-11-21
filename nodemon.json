@@ -1,8 +1,8 @@
 {
-    "env": {
-        "NODE_ENV": "development",
-        "PORT": "3000",
-        "JWT_KEY": "abcdedfghijklmnopqrstuvwxyz",
-        "HOST": "172.20.6.239"
-    }
+  "env": {
+    "NODE_ENV": "development",
+    "PORT": "3000",
+    "JWT_KEY": "abcdedfghijklmnopqrstuvwxyz",
+    "HOST": "172.20.6.239"
+  }
 }

@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+
+const HOST = process.env.HOST || "localhost";
+const PORT = process.env.PORT || "3000";
 
 const User = require("../models/user");
 
@@ -21,7 +24,7 @@ exports.getUsers = (req, res, next) => {
             userImage: doc.userImage,
             request: {
               type: "GET",
-              url: "http://localhost:3000/api/users/" + doc._id,
+              url: "http://" + HOST + ":" + PORT + "/api/users/" + doc._id,
             },
           };
         }),
@@ -66,7 +69,13 @@ exports.createUser = (req, res, next) => {
                   message: "User created",
                   request: {
                     type: "GET",
-                    url: "http://localhost:3000/api/users/" + result._id,
+                    url:
+                      "http://" +
+                      HOST +
+                      ":" +
+                      PORT +
+                      "/api/users/" +
+                      result._id,
                   },
                 });
               })
@@ -81,120 +90,124 @@ exports.createUser = (req, res, next) => {
 };
 
 exports.loginUser = (req, res, next) => {
-    console.log(req.body);
-    User.find({ email: req.body.email })
+  console.log(req.body);
+  User.find({ email: req.body.email })
     .exec()
-    .then( user => {
+    .then((user) => {
       if (user.length < 1) {
         return res.status(401).json({
-          message: "Auth failed"
+          message: "Auth failed",
         });
       }
       bcrypt.compare(req.body.password, user[0].password, (err, result) => {
         if (err) {
           return res.status(401).json({
-            message: "Auth failed"
+            message: "Auth failed",
           });
         }
         if (result) {
-          const token = jwt.sign({
-            email: user[0].email,
-            userId: user[0]._id,
-            role: user[0].role
-          }, process.env.JWT_KEY, {
-            expiresIn: "1h"
-          })
+          const token = jwt.sign(
+            {
+              email: user[0].email,
+              userId: user[0]._id,
+              role: user[0].role,
+            },
+            process.env.JWT_KEY,
+            {
+              expiresIn: "1h",
+            }
+          );
           return res.status(200).json({
             message: "Auth successful",
-            token: token
+            token: token,
+            role: user[0].role,
           });
         }
         res.status(401).json({
-          message: "Auth failed"
+          message: "Auth failed",
         });
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.log(err);
       res.status(500).json({ error: err });
     });
-  };
+};
 
 exports.getUser = (req, res, next) => {
-    console.log(req.params.userId);
-    const id = req.params.userId;
-    User.findById(id)
-      .select("firstName lastName email role")
-      .exec()
-      .then((doc) => {
-        console.log(doc);
-        if (doc) {
-          res.status(200).json({
-            firstName: doc.firstName,
-            lastName: doc.lastName,
-            email: doc.email,
-            role: doc.role,
-            _id: doc._id,
-            userImage: doc.userImage,
-          });
-        } else {
-          console.log("No valid entry found for provided ID");
-          res
-            .status(404)
-            .json({ message: "No valid entry found for provided ID" });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).json({ error: err });
-      });
-  };
+  console.log(req.params.userId);
+  const id = req.params.userId;
+  User.findById(id)
+    .select("firstName lastName email role")
+    .exec()
+    .then((doc) => {
+      console.log(doc);
+      if (doc) {
+        res.status(200).json({
+          firstName: doc.firstName,
+          lastName: doc.lastName,
+          email: doc.email,
+          role: doc.role,
+          _id: doc._id,
+          userImage: doc.userImage,
+        });
+      } else {
+        console.log("No valid entry found for provided ID");
+        res
+          .status(404)
+          .json({ message: "No valid entry found for provided ID" });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+};
 
 exports.updateUser = (req, res, next) => {
-    const id = req.params.userId;
-    const updateOps = {};
-    for (const ops of req.body) {
-      updateOps[ops.propName] = ops.value;
-    }
-    User.updateOne({ _id: req.params.userId }, { $set: updateOps })
-      .exec()
-      .then((result) => {
-        res.status(200).json({
-          message: "User updated",
-          request: {
-            type: "GET",
-            url: "http://localhost:3000/api/users/" + id,
-          },
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        res.status(500).json({ error: err });
+  const id = req.params.userId;
+  const updateOps = {};
+  for (const ops of req.body) {
+    updateOps[ops.propName] = ops.value;
+  }
+  User.updateOne({ _id: req.params.userId }, { $set: updateOps })
+    .exec()
+    .then((result) => {
+      res.status(200).json({
+        message: "User updated",
+        request: {
+          type: "GET",
+          url: "http://" + HOST + ":" + PORT + "/api/users/" + id,
+        },
       });
-  };
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).json({ error: err });
+    });
+};
 
 exports.deleteUser = (req, res, next) => {
-    const id = req.params.userId;
-    User.findById(id)
-      .exec()
-      .then((user) => {
-        if (!user) {
-          return res.status(404).json({
-            message: "User not found",
-          });
-        } else {
-          User.deleteOne({ _id: id })
-            .exec()
-            .then((result) => {
-              res.status(200).json({
-                message: "User deleted",
-              });
-            })
-            .catch((err) => {
-              console.log(err);
-              res.status(500).json({ error: err });
+  const id = req.params.userId;
+  User.findById(id)
+    .exec()
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      } else {
+        User.deleteOne({ _id: id })
+          .exec()
+          .then((result) => {
+            res.status(200).json({
+              message: "User deleted",
             });
-        }
-      });
-  };
-
+          })
+          .catch((err) => {
+            console.log(err);
+            res.status(500).json({ error: err });
+          });
+      }
+    });
+};

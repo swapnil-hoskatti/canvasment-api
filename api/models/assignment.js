@@ -5,7 +5,11 @@ const assignmentSchema = mongoose.Schema({
   name: { type: String, required: true },
   description: String,
   dueDate: { type: Date, required: true },
-  course: { type: String, required: true },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "Course",
+  },
   points: { type: Number, required: true },
 });
 
