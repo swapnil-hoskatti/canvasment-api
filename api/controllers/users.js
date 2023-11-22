@@ -32,7 +32,6 @@ exports.getUsers = (req, res, next) => {
       res.status(200).json(response);
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 };
@@ -42,14 +41,12 @@ exports.createUser = (req, res, next) => {
     .exec()
     .then((user) => {
       if (user.length >= 1) {
-        console.log(user);
         return res.status(409).json({
           message: "User already exists",
         });
       } else {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
           if (err) {
-            console.log(err);
             return res.status(500).json({ error: err });
           } else {
             const newUser = new User({
@@ -64,7 +61,6 @@ exports.createUser = (req, res, next) => {
             newUser
               .save()
               .then((result) => {
-                console.log(result);
                 res.status(201).json({
                   message: "User created",
                   request: {
@@ -80,7 +76,6 @@ exports.createUser = (req, res, next) => {
                 });
               })
               .catch((err) => {
-                console.log(err);
                 res.status(500).json({ error: err });
               });
           }
@@ -90,12 +85,10 @@ exports.createUser = (req, res, next) => {
 };
 
 exports.loginUser = (req, res, next) => {
-  console.log(req.body);
   User.find({ email: req.body.email })
     .exec()
     .then((user) => {
       if (user.length < 1) {
-        console.log(user);
         return res.status(401).json({
           message: "Auth failed",
         });
@@ -130,19 +123,16 @@ exports.loginUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 };
 
 exports.getUser = (req, res, next) => {
-  console.log(req.params.userId);
   const id = req.params.userId;
   User.findById(id)
     .select("firstName lastName email role")
     .exec()
     .then((doc) => {
-      console.log(doc);
       if (doc) {
         res.status(200).json({
           firstName: doc.firstName,
@@ -153,14 +143,12 @@ exports.getUser = (req, res, next) => {
           userImage: doc.userImage,
         });
       } else {
-        console.log("No valid entry found for provided ID");
         res
           .status(404)
           .json({ message: "No valid entry found for provided ID" });
       }
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 };
@@ -183,7 +171,6 @@ exports.updateUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 };
@@ -206,7 +193,6 @@ exports.deleteUser = (req, res, next) => {
             });
           })
           .catch((err) => {
-            console.log(err);
             res.status(500).json({ error: err });
           });
       }

@@ -32,11 +32,9 @@ exports.getAllCourses = (req, res, next) => {
           };
         }),
       };
-      console.log(response);
       res.status(200).json(response);
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 };
@@ -44,10 +42,9 @@ exports.getAllCourses = (req, res, next) => {
 exports.getOneCourse = (req, res, next) => {
   const courseCode = req.params.courseCode;
   Course.findOne({ courseCode: courseCode })
-    .select("name description courseCode instructor students assignments")
+    .select("name description courseCode instructor")
     .exec()
     .then((doc) => {
-      console.log("From database", doc);
       if (doc) {
         res.status(200).json({
           course: doc,
@@ -75,7 +72,6 @@ exports.createCourse = (req, res, next) => {
   course
     .save()
     .then((result) => {
-      console.log(result);
       res.status(201).json({
         message: "Created course successfully",
         createdCourse: {
@@ -91,7 +87,6 @@ exports.createCourse = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 };
@@ -101,7 +96,6 @@ exports.updateCourse = (req, res, next) => {
   const updateOps = {};
   for (const ops of req.body) {
     updateOps[ops.propName] = ops.value;
-    console.log(updateOps);
   }
   Course.update({ _id: id }, { $set: updateOps })
     .exec()
@@ -115,7 +109,6 @@ exports.updateCourse = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(500).json({ error: err });
     });
 };
@@ -135,7 +128,6 @@ exports.deleteCourse = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       res.status(404).json({ error: err });
     });
 };
