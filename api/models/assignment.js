@@ -6,7 +6,7 @@ const assignmentSchema = mongoose.Schema({
   description: String,
   dueDate: { type: Date, required: true },
   course: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     required: true,
     ref: "Course",
   },

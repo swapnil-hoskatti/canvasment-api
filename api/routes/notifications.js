@@ -6,12 +6,12 @@ const Notification = require("../models/notification");
 const checkAuth = require("../middleware/check-auth");
 const NotificationsController = require("../controllers/notifications");
 
-router.get("/:userId", checkAuth, NotificationsController.getAllNotificationsForUser);
+router.get("/:assignmentId", checkAuth, NotificationsController.getAllNotificationsForAssignment);
 
 router.post("/:userId/:assignmentId", checkAuth, NotificationsController.createNotification);
 
-router.delete("/:userId/:notificationId", checkAuth, NotificationsController.deleteNotification);
+router.delete("/:notificationId", checkAuth, NotificationsController.deleteNotification);
 
-router.patch("/:userId/:notificationId", checkAuth, NotificationsController.updateNotification);
+router.patch("/:notificationId", checkAuth, NotificationsController.updateNotification);
 
 module.exports = router;

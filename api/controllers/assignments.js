@@ -6,10 +6,11 @@ const PORT = process.env.PORT || "3000";
 const Assignment = require("../models/assignment");
 const User = require("../models/user");
 const Course = require("../models/course");
+const course = require("../models/course");
 
 exports.assignments_get_all = (req, res, next) => {
   const courseCode = req.params.courseCode;
-  Assignment.find({ courseCode: courseCode })
+  Assignment.find({ course: courseCode })
     .select("name description dueDate course points")
     .exec()
     .then((docs) => {
@@ -26,7 +27,7 @@ exports.assignments_get_all = (req, res, next) => {
             request: {
               type: "GET",
               url:
-                "http://" + HOST + ":" + PORT + "/api/assignments/" + doc._id,
+                "http://" + HOST + ":" + PORT + "/api/assignments/" + courseCode + "/" + doc._id,
             },
           };
         }),
@@ -41,18 +42,47 @@ exports.assignments_get_all = (req, res, next) => {
 
 exports.assignments_create = (req, res, next) => {
   if (req.userData.role == "Instructor") {
+    courseCode = req.params.courseCode;
     const newAssignment = new Assignment({
       _id: new mongoose.Types.ObjectId(),
       name: req.body.name,
       description: req.body.description,
       dueDate: req.body.dueDate,
-      course: req.body.course,
+      course: courseCode,
       points: req.body.points,
     });
 
     newAssignment
       .save()
       .then((result) => {
+        Course.findOne({ courseCode: courseCode })
+          .exec()
+          .then((doc) => {
+            if (doc) {
+              // Find students in course
+              User.find({ courses: doc._id })
+                .exec()
+                .then((users) => {
+                  var dateOffset = (24*60*60*1000);
+                  // Add assignment to each student
+                  for (const user of users) {
+                    newNotification = {
+                      _id: new mongoose.Types.ObjectId(),
+                      userId: user._id,
+                      assignmentId: newAssignment._id,
+                      date: new Date(newAssignment.dueDate.getTime() - dateOffset),
+                    };
+                    newNotification.save();
+                  }
+                }).then((result) => {
+                  console.log(result);
+                })
+                .catch((err) => {
+                  console.log(err);
+                  res.status(500).json({ error: err });
+                });
+            }
+          })
         console.log(result);
         res.status(201).json({
           createdAssignment: newAssignment,
@@ -80,19 +110,20 @@ exports.assignments_create = (req, res, next) => {
 };
 
 exports.assignments_get_one = (req, res, next) => {
-  const id = req.params.userId;
+  courseCode = req.params.courseCode;
+  const id = req.params.assignId;
   Assignment.findById(id)
     .select("name description dueDate course points")
     .exec()
     .then((doc) => {
-      console.log(doc);
+      console.log("From database", doc);
       if (doc) {
         res.status(200).json({
-          name: doc.name,
-          description: doc.description,
-          dueDate: doc.dueDate,
-          course: doc.course,
-          points: doc.points,
+          assignment: doc,
+          request: {
+            type: "GET",
+            url: "http://" + HOST + ":" + PORT + "/api/assignments/" + courseCode + "/" + doc._id,
+          },
         });
       } else {
         res
@@ -108,7 +139,7 @@ exports.assignments_get_one = (req, res, next) => {
 
 exports.assignments_update = (req, res, next) => {
   if (req.userData.role == "Instructor") {
-    const id = req.params.assignIdId;
+    const id = req.params.assignId;
     const updateOps = {};
     for (const ops of req.body) {
       updateOps[ops.propName] = ops.value;

@@ -95,6 +95,7 @@ exports.loginUser = (req, res, next) => {
     .exec()
     .then((user) => {
       if (user.length < 1) {
+        console.log(user);
         return res.status(401).json({
           message: "Auth failed",
         });
@@ -114,7 +115,7 @@ exports.loginUser = (req, res, next) => {
             },
             process.env.JWT_KEY,
             {
-              expiresIn: "1h",
+              expiresIn: "8h",
             }
           );
           return res.status(200).json({
