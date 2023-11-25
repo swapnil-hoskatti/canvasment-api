@@ -4,35 +4,84 @@ const HOST = process.env.HOST || "localhost";
 const PORT = process.env.PORT || "3000";
 
 const Course = require("../models/course");
+const User = require("../models/user");
 
 exports.getAllCourses = (req, res, next) => {
-  Course.find()
-    .select("name description courseCode instructor students assignments")
+  const userId = req.userData.userId;
+  const role = req.userData.role;
+  User.findById(userId)
     .exec()
-    .then((docs) => {
-      const response = {
-        count: docs.length,
-        courses: docs.map((doc) => {
-          return {
-            name: doc.name,
-            description: doc.description,
-            courseCode: doc.courseCode,
-            instructor: doc.instructor,
-            _id: doc._id,
-            request: {
-              type: "GET",
-              url:
-                "http://" +
-                HOST +
-                ":" +
-                PORT +
-                "/api/courses/" +
-                doc.courseCode,
-            },
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+      if ( role == "Student" ) {
+      Course.find({ _id: { $in: user.courses } })
+        .select("name description courseCode instructor")
+        .exec()
+        .then((docs) => {
+          const response = {
+            count: docs.length,
+            courses: docs.map((doc) => {
+              return {
+                name: doc.name,
+                description: doc.description,
+                courseCode: doc.courseCode,
+                instructor: doc.instructor,
+                _id: doc._id,
+                request: {
+                  type: "GET",
+                  url:
+                    "http://" +
+                    HOST +
+                    ":" +
+                    PORT +
+                    "/api/courses/" +
+                    doc.courseCode,
+                },
+              };
+            }),
           };
-        }),
-      };
-      res.status(200).json(response);
+          res.status(200).json(response);
+        })
+        .catch((err) => {
+          res.status(500).json({ error: err });
+        });
+      } else if ( role == "Instructor" ) {
+        Course.find({ instructor: userId })
+          .select("name description courseCode instructor")
+          .exec()
+          .then((docs) => {
+            const response = {
+              count: docs.length,
+              courses: docs.map((doc) => {
+                return {
+                  name: doc.name,
+                  description: doc.description,
+                  courseCode: doc.courseCode,
+                  instructor: doc.instructor,
+                  _id: doc._id,
+                  request: {
+                    type: "GET",
+                    url:
+                      "http://" +
+                      HOST +
+                      ":" +
+                      PORT +
+                      "/api/courses/" +
+                      doc.courseCode,
+                  },
+                };
+              }),
+            };
+            res.status(200).json(response);
+          })
+          .catch((err) => {
+            res.status(500).json({ error: err });
+          });
+      }
     })
     .catch((err) => {
       res.status(500).json({ error: err });

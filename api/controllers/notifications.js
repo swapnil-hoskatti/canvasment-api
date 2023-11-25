@@ -56,8 +56,8 @@ exports.createNotification = (req, res, next) => {
           }
           // compare dateTime to current time and due date. It should be between the two
           if (
-            req.body.dateTime < Date.now() ||
-            req.body.dateTime > assignment.dueDate
+            new Date(req.body.dateTime).toLocaleString('en-US', { timeZone: 'America/New_York' }) < new Date(Date.now()).toLocaleString('en-US', { timeZone: 'America/New_York' }) ||
+            new Date(req.body.dateTime).toLocaleString('en-US', { timeZone: 'America/New_York' }) > new Date(assignment.dueDate).toLocaleString('en-US', { timeZone: 'America/New_York' })
           ) {
             return res.status(404).json({
               message: "Date is not valid",
@@ -67,30 +67,14 @@ exports.createNotification = (req, res, next) => {
             _id: new mongoose.Types.ObjectId(),
             userId: userId,
             assignId: assignmentId,
-            dateTime: req.body.dateTime,
+            dateTime: new Date(req.body.dateTime).toLocaleString('en-US', { timeZone: 'America/New_York' }),
             enabled: req.body.enabled,
           });
           notification
             .save()
             .then((result) => {
               res.status(201).json({
-                message: "Notification created",
-                createdNotification: {
-                  _id: result._id,
-                  user: result.user,
-                  assignment: result.assignment,
-                  read: result.read,
-                },
-                request: {
-                  type: "GET",
-                  url:
-                    "http://" +
-                    HOST +
-                    ":" +
-                    PORT +
-                    "/notifications/" +
-                    result._id,
-                },
+                message: "Notification created"
               });
             })
             .catch((err) => {
@@ -103,7 +87,7 @@ exports.createNotification = (req, res, next) => {
 };
 
 exports.deleteNotification = (req, res, next) => {
-  notificationId = req.params.notificationId;
+  const notificationId = req.params.notificationId;
   Notification.findById(notificationId)
     .exec()
     .then((notification) => {
@@ -137,10 +121,27 @@ exports.updateNotification = (req, res, next) => {
           message: "Notification not found",
         });
       }
-      const updateOps = {};
-      for (const ops of req.body) {
-        updateOps[ops.propName] = ops.value;
+      Assignment.findById(notification.assignId)
+        .exec()
+        .then((assignment) => {
+          if (!assignment) {
+            return res.status(404).json({
+              message: "Assignment not found",
+            });
+          }
+          // compare dateTime to current time and due date. It should be between the two
+      if (
+        new Date(req.body.dateTime).toLocaleString('en-US', { timeZone: 'America/New_York' }) < new Date(Date.now()).toLocaleString('en-US', { timeZone: 'America/New_York' }) ||
+        new Date(req.body.dateTime).toLocaleString('en-US', { timeZone: 'America/New_York' }) > new Date(assignment.dueDate).toLocaleString('en-US', { timeZone: 'America/New_York' })
+      ) {
+        return res.status(404).json({
+          message: "Date is not valid",
+        });
       }
+      const updateOps = {
+        enabled: req.body.enabled,
+        dateTime: new Date(req.body.dateTime).toLocaleString('en-US', { timeZone: 'America/New_York' })
+      };
       Notification.updateOne({ _id: notificationId }, { $set: updateOps })
         .exec()
         .then((result) => {
@@ -164,4 +165,5 @@ exports.updateNotification = (req, res, next) => {
           });
         });
     });
+  });
 };

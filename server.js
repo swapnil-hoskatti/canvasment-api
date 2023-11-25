@@ -10,7 +10,7 @@ exports.PORT = PORT;
 const server = http.createServer(app);
 
 console.log(
-  `Server running at http://${HOST}:${PORT}/\nPress CTRL-C to stop\n`
+  `Server running at http://${HOST}:${PORT}/\nPress CTRL-C to stop`
 );
 
 server.listen(PORT, HOST);

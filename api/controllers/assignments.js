@@ -6,7 +6,7 @@ const PORT = process.env.PORT || "3000";
 const Assignment = require("../models/assignment");
 const User = require("../models/user");
 const Course = require("../models/course");
-const course = require("../models/course");
+const Notification = require("../models/notification");
 
 exports.assignments_get_all = (req, res, next) => {
   const courseCode = req.params.courseCode;
@@ -72,19 +72,17 @@ exports.assignments_create = (req, res, next) => {
                   var dateOffset = 24 * 60 * 60 * 1000;
                   // Add assignment to each student
                   for (const user of users) {
-                    newNotification = {
+                    const newNotification = new Notification({
                       _id: new mongoose.Types.ObjectId(),
                       userId: user._id,
-                      assignmentId: newAssignment._id,
-                      date: new Date(
+                      assignId: newAssignment._id,
+                      dateTime: new Date(
                         newAssignment.dueDate.getTime() - dateOffset
                       ),
-                    };
+                      enabled: true,
+                    });
                     newNotification.save();
                   }
-                })
-                .then((result) => {
-                  console.log(result);
                 })
                 .catch((err) => {
                   res.status(500).json({ error: err });
@@ -152,10 +150,12 @@ exports.assignments_get_one = (req, res, next) => {
 exports.assignments_update = (req, res, next) => {
   if (req.userData.role == "Instructor") {
     const id = req.params.assignId;
-    const updateOps = {};
-    for (const ops of req.body) {
-      updateOps[ops.propName] = ops.value;
-    }
+    const updateOps = {
+      name: req.body.name,
+      description: req.body.description,
+      dueDate: req.body.dueDate,
+      points: req.body.points,
+    };    
     Assignment.updateOne({ _id: req.params.assignId }, { $set: updateOps })
       .exec()
       .then((result) => {
