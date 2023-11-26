@@ -12,6 +12,12 @@ router.get(
   NotificationsController.getAllNotificationsForAssignment
 );
 
+router.get(
+  "/",
+  checkAuth,
+  NotificationsController.getAllNotificationsForUser
+);
+
 router.post(
   "/:assignmentId",
   checkAuth,

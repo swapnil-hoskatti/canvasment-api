@@ -167,3 +167,31 @@ exports.updateNotification = (req, res, next) => {
     });
   });
 };
+
+exports.getAllNotificationsForUser = (req, res, next) => {
+  const userId = req.userData.userId;
+  Notification.find({ userId: userId })
+  .populate('assignId')
+    .exec()
+    .then((docs) => {
+      const response = {
+        count: docs.length,
+        notifications: docs.map((doc) => {
+          return {
+            _id: doc._id,
+            dateTime: doc.dateTime,
+            enabled: doc.enabled,
+            assignment: doc.assignId,
+            request: {
+              type: "GET",
+              url: "http://" + HOST + ":" + PORT + "/notifications/" + doc._id,
+            },
+          };
+        }),
+      };
+      res.status(200).json(response);
+    })
+    .catch((err) => {
+      res.status(500).json({ error: err });
+    });
+};
